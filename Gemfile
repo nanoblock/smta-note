@@ -13,6 +13,9 @@ gem 'active_model_serializers'
 # gem 'turbolinks'
 gem 'jbuilder'
 
+gem 'aws-sdk', '>= 2.0.0'
+gem 'paperclip'
+
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
 
 # Use ActiveModel has_secure_password
