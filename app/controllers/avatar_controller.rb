@@ -1,5 +1,4 @@
 class AvatarController < ApiBaseController
-  before_action :set_token, only: [:upload]
 
   skip_before_action :require_valid_token, :only => [:upload]
 
@@ -22,7 +21,7 @@ class AvatarController < ApiBaseController
       s3_upload_fail e
     end
   
-    user = User.find(@token.user_id)
+    user = User.find(current_token.user_id)
     user.avatar_url = avatar_bucket + @file_name
 
     if user.save!
@@ -34,16 +33,13 @@ class AvatarController < ApiBaseController
   end
 
   private
-  def set_token
-    @token = Token.find_by_access_token(@access_token)
-  end
 
   def s3_path
     return "https://s3.ap-northeast-2.amazonaws.com/smta-note/"
   end
 
   def avatar_bucket
-    return  "media/image/avatar/" + @token.user_id + "/"
+    return  "media/image/avatar/" + current_token.user_id + "/"
   end
 
 end

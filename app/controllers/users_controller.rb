@@ -1,19 +1,20 @@
 class UsersController < ApiBaseController
-  before_action :set_user, only: [:show, :edit, :update, :destroy]
   skip_before_action :require_valid_token, only: [:create, :activate, 
-    :index, :reset_password, :reset_password_token, :reset_password_update]
+    :index, :reset_password, :reset_password_token, :reset_password_update] 
+
 
   # GET /users
   def index
-    @users = User.all
-    return render status: :no_content, nothing: true unless @users
+    users = User.all
+    return render status: :no_content, nothing: true unless users
 
-    # render status: :ok, json: @users.size
+    render status: :ok, json: users
   end
 
   # GET /users/1
   def show
-    render status: :ok, json: @user if @user
+    user = current_user
+    render status: :ok, json: user if user
   end
 
   # GET /users/new
@@ -31,7 +32,7 @@ class UsersController < ApiBaseController
 
     if @user.save
       # render status: :created, json: {"user": @user, "token": set_token(@user.id)}
-      render status: :created, json: {"user": @user }
+      render status: :created, json: @user
     else
       render nothing: true, status: :bad_request
     end
@@ -40,11 +41,12 @@ class UsersController < ApiBaseController
 
   # PATCH/PUT /users/1
   def update
+    user = current_user
     respond_to do |format|
-      if @user.update(user_params)
-        format.json { render json: @user }
+      if user.update(user_params)
+        format.json { render json: user }
       else
-        format.json { render json: @user.errors, status: :unprocessable_entity }
+        format.json { render json: user.errors, status: :unprocessable_entity }
       end
     end
 
@@ -52,7 +54,7 @@ class UsersController < ApiBaseController
 
   # DELETE /users/1
   def destroy
-    render status: :ok, nothing: true if @user.destroy!
+    render status: :ok, nothing: true if current_user.destroy!
   end
 
   def activate
@@ -82,17 +84,17 @@ class UsersController < ApiBaseController
  
     if @user.change_password!(params[:user][:password])
       # render status: :ok, json: {"user": @user, "token": set_token(@user.id) }
-      render status: :created, json: {"user": @user}
+      render status: :created, json: @user
     else
       render status: :bad_request, nothing: true
     end
   end
 
   private
-    def set_user
-      return render nothing: true, status: :bad_request unless params[:id]
-      @user = User.find(params[:id])
-    end
+    # def set_user
+    #   return render nothing: true, status: :bad_request unless params[:id]
+    #   @user = User.find(params[:id])
+    # end
 
     def set_token(user_id)
       @token = Token.find_by_user_id(user_id)

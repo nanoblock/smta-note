@@ -1,14 +1,16 @@
 Rails.application.routes.draw do
+
   resources :users, except: [:destroy] do
-    member do
-      get :activate
+    resources :notes, except: [:edit, :new] do 
+      resources :comments, except: [:edit, :new]
     end
   end
 
   delete '/users/:id' => 'users#destroy', as: :destroy_user
+  get '/users/activate/:id' => 'users#activate', as: :activate_user
 
-  post 'login' => 'user_sessions#create'
-  get 'logout' => 'user_sessions#destroy'
+  post 'login' => 'user_sessions#create', as: :login
+  get 'logout' => 'user_sessions#destroy', as: :logout
 
   post 'accounts/password/reset' => 'users#reset_password'
   get 'accounts/password/token/:id' => 'users#reset_password_token'
