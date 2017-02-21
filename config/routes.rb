@@ -3,6 +3,7 @@ Rails.application.routes.draw do
   resources :users, except: [:destroy] do
     resources :notes, except: [:edit, :new] do 
       resources :comments, except: [:edit, :new]
+      resources :favorites, except: [:edit, :new, :update]
     end
   end
 

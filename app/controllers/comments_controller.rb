@@ -1,6 +1,5 @@
 class CommentsController < ApiBaseController
-  before_action :error_user_param
-  before_action :exsist_note, only: [:create, :index, :show, :destroy, :update]
+  before_action :error_user_param, :error_note_param
   
   before_action :set_note
 
@@ -33,7 +32,6 @@ class CommentsController < ApiBaseController
   end
 
   def update
-    # @comment = @note.comment.find_by_id(params[:id])
     if set_comment.update(comment_params)
       render 'jbuilder/comment', status: :ok, formats: 'json'
     else

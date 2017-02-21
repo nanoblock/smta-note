@@ -32,8 +32,7 @@ class UsersController < ApiBaseController
     if @user.save
       render 'jbuilder/user', status: :created, formats: 'json'
     else
-      error = @user.errors
-      error_format(400, Rack::Utils::HTTP_STATUS_CODES[400], "#{error.first.first} #{error.first.second}")
+      error_format(400, Rack::Utils::HTTP_STATUS_CODES[400], @user.errors)
     end
 
   end
@@ -45,8 +44,7 @@ class UsersController < ApiBaseController
       if user.update(user_params)
         render 'jbuilder/user', status: :ok, formats: 'json'
       else
-        error = user.errors
-        error_format(400, Rack::Utils::HTTP_STATUS_CODES[400], "#{error.first.first} #{error.first.second}")
+        error_format(400, Rack::Utils::HTTP_STATUS_CODES[400], @user.errors)
       end
     end
 
@@ -88,8 +86,7 @@ class UsersController < ApiBaseController
     if @user.change_password!(params[:user][:password])
       render 'jbuilder/user', status: :created, formats: 'json'
     else
-      error = @user.errors
-      error_format(400, Rack::Utils::HTTP_STATUS_CODES[400], "#{error.first.first} #{error.first.second}")
+      error_format(400, Rack::Utils::HTTP_STATUS_CODES[400], @user.errors)
     end
   end
 

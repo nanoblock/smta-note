@@ -3,6 +3,10 @@ class ApiBaseController < ApplicationController
 
   before_action :invalid_exsist_token, :require_valid_token
 
+  def search_note
+    
+  end
+
   def error_format(code, status, message)
     return render status: status.to_sym, json: error_format_json(code, status, message)
   end
@@ -48,6 +52,12 @@ class ApiBaseController < ApplicationController
   def error_user_param(user_id = params[:user_id].to_i)
     unless current_user.id.to_i == user_id
       error_format(400, Rack::Utils::HTTP_STATUS_CODES[400], "Parameter does not match user data") 
+    end
+  end
+
+  def error_note_param(note_id = params[:note_id].to_i)
+    unless current_user.notes.exists?(id: params[:note_id])
+      error_format(400, Rack::Utils::HTTP_STATUS_CODES[400], "Parameter does not match note date")
     end
   end
 
