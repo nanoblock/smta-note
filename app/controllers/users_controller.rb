@@ -1,20 +1,19 @@
 class UsersController < ApiBaseController
-  skip_before_action :require_valid_token, only: [:create, :activate, 
-    :index, :reset_password, :reset_password_token, :reset_password_update] 
+  skip_before_action :require_valid_token, :invalid_exsist_token, only: [:create, :activate, 
+    :index, :reset_password_token, :reset_password_update] 
 
 
   # GET /users
   def index
-    users = User.all
-    return render status: :no_content, nothing: true unless users
-
-    render status: :ok, json: users
+    @user = User.all
+    return render status: :no_content, nothing: true unless @user
+    render 'jbuilder/user', status: :ok, formats: 'json'
   end
 
   # GET /users/1
   def show
-    user = current_user
-    render status: :ok, json: user if user
+    @user = current_user
+    render 'jbuilder/user', status: :ok, formats: 'json' if @user
   end
 
   # GET /users/new
@@ -31,10 +30,10 @@ class UsersController < ApiBaseController
     @user = User.new(user_params)
 
     if @user.save
-      # render status: :created, json: {"user": @user, "token": set_token(@user.id)}
-      render status: :created, json: @user
+      render 'jbuilder/user', status: :created, formats: 'json'
     else
-      render nothing: true, status: :bad_request
+      error = @user.errors
+      error_format(400, Rack::Utils::HTTP_STATUS_CODES[400], "#{error.first.first} #{error.first.second}")
     end
 
   end
@@ -44,9 +43,10 @@ class UsersController < ApiBaseController
     user = current_user
     respond_to do |format|
       if user.update(user_params)
-        format.json { render json: user }
+        render 'jbuilder/user', status: :ok, formats: 'json'
       else
-        format.json { render json: user.errors, status: :unprocessable_entity }
+        error = user.errors
+        error_format(400, Rack::Utils::HTTP_STATUS_CODES[400], "#{error.first.first} #{error.first.second}")
       end
     end
 
@@ -61,15 +61,18 @@ class UsersController < ApiBaseController
     if (@user = User.load_from_activation_token(params[:id]))
         @user.activate!
         # render "users/activate", :formats => [:html]
-        render status: :ok, nothing: true
+        return render status: :ok, nothing: true
     else
-        render nothing: true, status: :not_found
+      error = @user.errors
+      error_format(400, Rack::Utils::HTTP_STATUS_CODES[400], "#{error.first.first} #{error.first.second}")
+        # return render nothing: true, status: :not_found
     end
   end
 
   def reset_password
-    @user = User.find_by_email(params[:email])
-    @user.deliver_reset_password_instructions! if @user
+    # @user = User.find_by_email(params[:email])
+    user = current_user
+    user.deliver_reset_password_instructions! if user
     render status: :ok, nothing: true
   end
  
@@ -83,18 +86,14 @@ class UsersController < ApiBaseController
     @user.password_confirmation = params[:user][:password_confirmation]
  
     if @user.change_password!(params[:user][:password])
-      # render status: :ok, json: {"user": @user, "token": set_token(@user.id) }
-      render status: :created, json: @user
+      render 'jbuilder/user', status: :created, formats: 'json'
     else
-      render status: :bad_request, nothing: true
+      error = @user.errors
+      error_format(400, Rack::Utils::HTTP_STATUS_CODES[400], "#{error.first.first} #{error.first.second}")
     end
   end
 
   private
-    # def set_user
-    #   return render nothing: true, status: :bad_request unless params[:id]
-    #   @user = User.find(params[:id])
-    # end
 
     def set_token(user_id)
       @token = Token.find_by_user_id(user_id)
@@ -109,7 +108,6 @@ class UsersController < ApiBaseController
       @user = User.load_from_reset_password_token(params[:id])
  
       if @user.blank?
-        # not_authenticated
         return false
       else
         return true

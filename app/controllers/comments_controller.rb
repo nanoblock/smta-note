@@ -1,61 +1,69 @@
 class CommentsController < ApiBaseController
-  before_action :set_comment, only: [:show, :update, :destroy]
+  before_action :error_user_param
+  before_action :exsist_note, only: [:create, :index, :show, :destroy, :update]
+  
+  before_action :set_note
 
   def index
-    @comments = Comment.all
-    if @comments.all
-      render status: :ok, json: @comments
+    @comments = @note.comment
+
+    if @comments
+      render 'jbuilder/comment_array', status: :ok, formats: 'json'
     else
-      render status: :no_content, nothing: true
+      render error_not_found
     end
+
   end
 
   def create
-    comment = Note.find(params[:note_id]).comment.build(comment_params)
-    if comment.save!
-      render status: :ok, json: comment
+    @comment = @note.comment.build(comment_params)
+    if @comment.save!
+      render 'jbuilder/comment', status: :ok, formats: 'json'
     else
-      render status: :bad_request, nothing: true
+      return error_not_found
     end
   end
 
   def show
-    if @comment
-      render status: :ok, json: @comment
+    if set_comment
+      render 'jbuilder/comment', status: :ok, formats: 'json'
     else
-      render status: :no_content, nothing: true
+      return error_not_found
     end
   end
 
   def update
-    if @comment.update(comment_params)
-      render status: :ok, json: @comment
+    # @comment = @note.comment.find_by_id(params[:id])
+    if set_comment.update(comment_params)
+      render 'jbuilder/comment', status: :ok, formats: 'json'
     else
-      render status: :bad_request, nothing: true
+      return error_not_found
     end
   end
 
   def destroy
-    if @comment.destroy!
+    if set_comment.destroy!
       render status: :ok, nothing: true
     else
-      render status: :bad_request, nothing: true
+      return error_not_found
     end
   end
 
   private
   def comment_params
-    params.require(:comment).permit(:contents, :user_id)
+    params.require(:comment).permit(:contents)
+  end
+
+  def set_note
+    @note = current_user.notes.find_by_id(params[:note_id])
   end
 
   def set_comment
-    @comment = Comment.find(params[:id])
+    @comment = @note.comment.find_by_id(params[:id])
   end
-  # def note_params
-  #   params.require(:note).permit(:title, :desc)
-  # end
 
-  # def set_note
-  #   @note = Note.find(params[:id])
-  # end
+  def exsist_note
+    return error_not_found if !current_user.notes.exists?(id: params[:note_id])
+  end
+
 end

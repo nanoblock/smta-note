@@ -9,6 +9,7 @@ Rails.application.routes.draw do
   delete '/users/:id' => 'users#destroy', as: :destroy_user
   get '/users/activate/:id' => 'users#activate', as: :activate_user
 
+  post 'sign_up' => 'users#create', as: :sign_up
   post 'login' => 'user_sessions#create', as: :login
   get 'logout' => 'user_sessions#destroy', as: :logout
 

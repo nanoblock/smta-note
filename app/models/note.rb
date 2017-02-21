@@ -4,6 +4,6 @@ class Note < ActiveRecord::Base
   has_many :comment
 
   validates :title, uniqueness: true
-  validates :desc, uniqueness: true
+  # validates :desc, uniqueness: true
   
 end

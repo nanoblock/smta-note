@@ -1,20 +1,22 @@
 class NotesController < ApiBaseController
+  before_action :error_user_param
   before_action :set_note, only: [:show, :update, :destroy]
 
   def index
-    @notes = Note.all
+    @note = Note.all
 
-    if @notes
-      render status: :ok, json: @notes
+    if @note
+      render 'jbuilder/note_array', status: :ok, formats: 'json'
+      # render status: :ok, json: @note
     else
       render status: :no_content, nothing: true
     end
   end
 
   def create
-    note = current_user.notes.build(note_params)
-    if note.save!
-      render status: :ok, json: note
+    @note = current_user.notes.build(note_params)
+    if @note.save!
+      render 'jbuilder/note', status: :ok, formats: 'json'
     else
       render status: :bad_request, nothing: true
     end
@@ -22,7 +24,7 @@ class NotesController < ApiBaseController
 
   def show
     if @note
-      render status: :ok, json: @note
+      render 'jbuilder/note', status: :ok, formats: 'json'
     else
       render status: :no_content, nothing: true
     end
@@ -30,7 +32,7 @@ class NotesController < ApiBaseController
 
   def update
     if @note.update(note_params)
-      render status: :ok, json: @note
+      render 'jbuilder/note', status: :ok, formats: 'json'
     else
       render status: :bad_request, nothing: true
     end

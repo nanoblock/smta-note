@@ -1,6 +1,6 @@
 class AvatarController < ApiBaseController
 
-  skip_before_action :require_valid_token, :only => [:upload]
+  skip_before_action :require_valid_token, :invalid_exsist_token, :only => [:upload]
 
   def upload
     bucket_exsist? S3_BUCKET
@@ -25,7 +25,7 @@ class AvatarController < ApiBaseController
     user.avatar_url = avatar_bucket + @file_name
 
     if user.save!
-      render status: :ok, json: @user 
+      render 'jbuilder/user', status: :ok, formats: 'json'
     else
       render status: :bad_request, nothing: true
     end

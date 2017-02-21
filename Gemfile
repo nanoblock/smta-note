@@ -5,7 +5,7 @@ gem 'pg'
 
 # DB
 gem 'sorcery'
-gem 'active_model_serializers'
+# gem 'active_model_serializers'
 
 # gem 'sass-rails', '~> 5.0'
 # gem 'uglifier', '>= 1.3.0'
