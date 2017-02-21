@@ -7,6 +7,7 @@ class CommentsController < ApiBaseController
     @comments = @note.comment
 
     if @comments
+      @comments = paginate @comments
       render 'jbuilder/comment_array', status: :ok, formats: 'json'
     else
       render error_not_found

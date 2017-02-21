@@ -2,9 +2,15 @@ class ApiBaseController < ApplicationController
   include ApplicationHelper
 
   before_action :invalid_exsist_token, :require_valid_token
+  skip_before_action :invalid_exsist_token, only: [:search_note]
+  skip_before_action :require_valid_token, only: [:search_note]
 
   def search_note
-    
+    # @q = Note.ransack(params[:q])
+    @note = Note.search(:desc_cont => params[:q]).result
+
+    @note = paginate @note
+    return render 'jbuilder/note_array', status: :ok, formats: 'json'
   end
 
   def error_format(code, status, message)

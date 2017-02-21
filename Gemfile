@@ -12,6 +12,10 @@ gem 'sorcery'
 # gem 'jquery-rails'
 # gem 'turbolinks'
 gem 'jbuilder'
+gem 'will_paginate'
+gem 'api-pagination'
+
+gem 'ransack'
 
 gem 'aws-sdk', '>= 2.0.0'
 gem 'paperclip'

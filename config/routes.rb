@@ -18,4 +18,6 @@ Rails.application.routes.draw do
   get 'accounts/password/token/:id' => 'users#reset_password_token'
   post 'accounts/password/reset/:id' => 'users#reset_password_update', as: :password_reset
 
+  get 'search' => 'api_base#search_note'
+
 end

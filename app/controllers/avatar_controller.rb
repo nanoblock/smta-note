@@ -16,7 +16,7 @@ class AvatarController < ApiBaseController
           key: avatar_bucket + @file_name,
           acl: 'public-read')
       
-      File.delete(path(@incoming_file.tempfile) if File.exist?(@incoming_file.tempfile)
+      # File.delete(path(@incoming_file.tempfile) if File.exist?(@incoming_file.tempfile)
     rescue Exception => e
       s3_upload_fail e
     end
