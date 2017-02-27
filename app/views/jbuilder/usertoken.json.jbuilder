@@ -1,7 +1,7 @@
 json.user do |user|
   json.id @user.id
   json.email @user.email
-  json.name @user.name
+  # json.name @user.name
   json.avatar_url @user.avatar_url
   json.updated_at @user.updated_at
 

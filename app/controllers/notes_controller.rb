@@ -1,9 +1,21 @@
 class NotesController < ApiBaseController
-  before_action :error_user_param
+  before_action :error_user_param, except: [:index_all]
   before_action :set_note, only: [:show, :update, :destroy]
+  skip_before_action :invalid_exsist_token, :require_valid_token, only: [:index_all]
 
   def index
-    @note = Note.all
+    @token = Token.find_by_access_token(@access_token)
+    @user = User.find(@token.user_id)
+    @note = @user.notes.order("updated_at DESC")
+    if @note
+      render 'jbuilder/note_array', status: :ok, formats: 'json'
+    else
+      render status: :no_content, nothing: true
+    end
+  end
+
+  def index_all
+    @note = Note.all.order("updated_at DESC")
 
     if @note
       render 'jbuilder/note_array', status: :ok, formats: 'json'
@@ -14,7 +26,7 @@ class NotesController < ApiBaseController
   end
 
   def create
-    @note = current_user.notes.build(note_params)
+    @note = @user.notes.build(note_params)
     if @note.save!
       render 'jbuilder/note', status: :ok, formats: 'json'
     else

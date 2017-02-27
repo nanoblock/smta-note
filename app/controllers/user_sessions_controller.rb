@@ -2,7 +2,13 @@ class UserSessionsController < ApiBaseController
   skip_before_action :require_valid_token, :invalid_exsist_token, :only => [:create]
  
   def create
+    @access_token = request.headers[:HTTP_ACCESS_TOKEN]
+    @token = Token.find_by_access_token(@access_token) if @access_token
+    @user = User.find(@token.user_id) if @token
+
     @user = login_email
+    return error_format(400, "Parameter does not match user data") unless @user
+    
     token = @user.activate
     @token = ApplicationController.helpers.current_token token.access_token
     @token.save!

@@ -10,7 +10,7 @@ class Mailer < ApplicationMailer
     @user = user
     @url = "http://0.0.0.0:3000/users/#{user.activation_token}/activate"
 
-    mail to: user.email, subject: "[적어적어]마! 이메일 인증해라"
+    mail to: @user.email, subject: "[적어적어]마! 이메일 인증해라"
   end
 
   # Subject can be set in your I18n file at config/locales/en.yml
@@ -18,6 +18,12 @@ class Mailer < ApplicationMailer
   #
   #   en.mailer.activation_success_email.subject
   #
+
+  def congratulation_email(user)
+    @user = user
+    mail to: @user.email, subject: "[IDEANOTE] 환영합니다."
+  end
+
   def activation_success_email(user)
     @user = user
     @url  = "http://0.0.0.0:3000/login"

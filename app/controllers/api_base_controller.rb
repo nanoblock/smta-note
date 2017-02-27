@@ -2,25 +2,39 @@ class ApiBaseController < ApplicationController
   include ApplicationHelper
 
   before_action :invalid_exsist_token, :require_valid_token
-  skip_before_action :invalid_exsist_token, only: [:search_note]
-  skip_before_action :require_valid_token, only: [:search_note]
+  skip_before_action :invalid_exsist_token, only: [:search_note, :test]
+  skip_before_action :require_valid_token, only: [:search_note, :test]
+
+  def search
+    @note = Note.search(:title_or_desc_cont => params[:q]).result
+    @note = paginate @note
+    if !@note.empty?
+      return render 'jbuilder/note_array', status: :ok, formats: 'json'
+    else
+      return error_not_found
+    end
+  end
 
   def search_note
-    # @q = Note.ransack(params[:q])
-    @note = Note.search(:desc_cont => params[:q]).result
+
+    if params[:reset].to_s
+      @note = Note.search(:title_or_desc_cont => params[:q]).result
+    else
+      @note ||= Note.search(:title_or_desc_cont => params[:q]).result
+    end
 
     @note = paginate @note
-    return render 'jbuilder/note_array', status: :ok, formats: 'json'
+    render 'jbuilder/note_array', status: :ok, formats: 'json'
   end
 
-  def error_format(code, status, message)
-    return render status: status.to_sym, json: error_format_json(code, status, message)
+  def error_format(code, message)
+    return render status: code, json: error_format_json(code, message)
   end
 
-  def error_format_json(code, status, message)
+  def error_format_json(code, message)
     json = {
       "code": code,
-      "status": status,
+      "status": Rack::Utils::HTTP_STATUS_CODES[code],
       "message": message
     }
     return json.to_json
@@ -30,7 +44,7 @@ class ApiBaseController < ApplicationController
 
   def require_valid_token
     return render status: :unauthorized, json: error_format(401, Rack::Utils::HTTP_STATUS_CODES[401], "Invalid token") if invalid_token @access_token
-    return render status: :unauthorized, json: error_format(401, Rack::Utils::HTTP_STATUS_CODES[401], "User do not login") if invalid_lagin @access_token
+    # return render status: :unauthorized, json: error_format(401, Rack::Utils::HTTP_STATUS_CODES[401], "User do not login") if invalid_lagin @access_token
   end
 
   def invalid_exsist_token
@@ -52,18 +66,23 @@ class ApiBaseController < ApplicationController
   end
 
   def error_not_found
-    error_format(404, Rack::Utils::HTTP_STATUS_CODES[404], "Not found data")
+    error_format(204, "No Content")
   end
 
   def error_user_param(user_id = params[:user_id].to_i)
-    unless current_user.id.to_i == user_id
-      error_format(400, Rack::Utils::HTTP_STATUS_CODES[400], "Parameter does not match user data") 
+    @token = Token.find_by_access_token(@access_token)
+    @user = User.find(@token.user_id)
+    unless @user.id.to_i == user_id.to_i
+      error_format(400, "Parameter does not match user data") 
     end
   end
 
   def error_note_param(note_id = params[:note_id].to_i)
-    unless current_user.notes.exists?(id: params[:note_id])
-      error_format(400, Rack::Utils::HTTP_STATUS_CODES[400], "Parameter does not match note date")
+    @token = Token.find_by_access_token(@access_token)
+    @user = User.find(@token.user_id)
+
+    unless @user.notes.exists?(id: params[:note_id])
+      error_format(400, "Parameter does not match note date")
     end
   end
 

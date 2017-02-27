@@ -4,10 +4,11 @@ class CommentsController < ApiBaseController
   before_action :set_note
 
   def index
-    @comments = @note.comment
+    @comments = @note.comment.order("updated_at DESC")
 
     if @comments
       @comments = paginate @comments
+      @comments.next_page
       render 'jbuilder/comment_array', status: :ok, formats: 'json'
     else
       render error_not_found

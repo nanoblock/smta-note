@@ -3,7 +3,7 @@ class FavoritesController < ApiBaseController
   before_action :set_favorite, only: [:show, :destroy]
 
   def index
-    @favorites = current_note.favorites
+    @favorites = current_note.favorites.order("updated_at DESC")
     if @favorites
       render 'jbuilder/favorite_array', status: :ok, formats: 'json'
     else
@@ -43,7 +43,7 @@ class FavoritesController < ApiBaseController
   end
 
   def current_note(id = params[:note_id].to_i)
-    current_user.notes.find(id)
+    @user.notes.find(id)
   end
 
   def set_favorite(id = params[:id].to_i)
@@ -56,13 +56,13 @@ class FavoritesController < ApiBaseController
   end
 
   def error_favorite_param(favorite_id = params[:favorite_id])
-    unless current_user.notes.find(params[:note_id]).favorites.exists?(id: favorite_id)
-      error_format(400, Rack::Utils::HTTP_STATUS_CODES[400], "Parameter does not match favorite date")
+    unless @user.notes.find(params[:note_id]).favorites.exists?(id: favorite_id)
+      error_format(400, "Parameter does not match favorite date")
     end
   end
 
   def error_render(error)
-    error_format(400, Rack::Utils::HTTP_STATUS_CODES[400], "#{error}")
+    error_format(400, "#{error}")
   end
 
 end

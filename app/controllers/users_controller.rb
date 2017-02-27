@@ -30,9 +30,12 @@ class UsersController < ApiBaseController
     @user = User.new(user_params)
 
     if @user.save
-      render 'jbuilder/user', status: :created, formats: 'json'
+      @user.activate
+      @token = Token.find_by_user_id @user.id
+      Mailer.congratulation_email(@user).deliver_now
+      render 'jbuilder/usertoken', status: :created, formats: 'json'
     else
-      error_format(400, Rack::Utils::HTTP_STATUS_CODES[400], @user.errors)
+      error_format(400, @user.errors)
     end
 
   end
@@ -44,7 +47,7 @@ class UsersController < ApiBaseController
       if user.update(user_params)
         render 'jbuilder/user', status: :ok, formats: 'json'
       else
-        error_format(400, Rack::Utils::HTTP_STATUS_CODES[400], @user.errors)
+        error_format(400, @user.errors)
       end
     end
 
@@ -62,16 +65,36 @@ class UsersController < ApiBaseController
         return render status: :ok, nothing: true
     else
       error = @user.errors
-      error_format(400, Rack::Utils::HTTP_STATUS_CODES[400], "#{error.first.first} #{error.first.second}")
+      error_format(400, "#{error.first.first} #{error.first.second}")
         # return render nothing: true, status: :not_found
     end
   end
 
+  def reset_password_api
+    token = Token.find_by_access_token(@access_token)
+    @user = User.find(token.user_id) if !token.nil?
+
+    return error_format(404, "Parameter does not match user data") unless User.authenticate(@user.email, password_params[:old_password])
+    @user.password = password_params[:password]
+    @user.password_confirmation = password_params[:password_confirmation]
+    if @user.valid?
+      @user.save
+      render 'jbuilder/user', status: :ok, formats: 'json'
+    else
+      return error_format(400, @user.errors)
+    end
+  end
+
   def reset_password
-    # @user = User.find_by_email(params[:email])
-    user = current_user
+    user = User.find_by_email(params[:email])
+
+    # token = Token.find_by_access_token(@access_token)
+    # user = User.find(token.user_id) if !token.nil?
     user.deliver_reset_password_instructions! if user
-    render status: :ok, nothing: true
+
+    # render 'jbuilder/user', status: :ok, formats: 'json'
+    render status: :ok, json: {"reset_token": user.reset_password_token}
+    # render status: :ok, nothing: true
   end
  
   def reset_password_token
@@ -86,7 +109,7 @@ class UsersController < ApiBaseController
     if @user.change_password!(params[:user][:password])
       render 'jbuilder/user', status: :created, formats: 'json'
     else
-      error_format(400, Rack::Utils::HTTP_STATUS_CODES[400], @user.errors)
+      error_format(400, @user.errors)
     end
   end
 
@@ -98,6 +121,10 @@ class UsersController < ApiBaseController
 
     def user_params
       params.require(:user).permit(:email, :name, :password, :password_confirmation)
+    end
+
+    def password_params
+      params.require(:user).permit(:old_password, :password, :password_confirmation)
     end
 
     def set_token_user_from_params?

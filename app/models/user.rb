@@ -4,12 +4,12 @@ class User < ActiveRecord::Base
   has_many :tokens, dependent: :destroy
   has_many :notes, dependent: :destroy
  
-  validates :password, length: { minimum: 3 }
-  validates :password, confirmation: true
-  validates :password_confirmation, presence: true
+  validates :password, length: { minimum: 3 }, if: -> {new_record? || changes[:crypted_passwword]}
+  validates :password, confirmation: true, if: -> {new_record? || changes[:crypted_passwword]}
+  validates :password_confirmation, presence: true, if: -> {new_record? || changes[:crypted_passwword]}
  
   validates :email, uniqueness: true
-  validates :name, uniqueness: true
+  # validates :name, uniqueness: true
  
   def self.login?(access_token)
     token = Token.find_by_access_token(access_token)
