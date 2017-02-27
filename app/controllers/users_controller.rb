@@ -87,9 +87,10 @@ class UsersController < ApiBaseController
 
   def reset_password
     user = User.find_by_email(params[:email])
-
+    
     # token = Token.find_by_access_token(@access_token)
     # user = User.find(token.user_id) if !token.nil?
+    return error_user_param unless user
     user.deliver_reset_password_instructions! if user
 
     # render 'jbuilder/user', status: :ok, formats: 'json'

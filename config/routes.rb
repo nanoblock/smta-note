@@ -19,9 +19,12 @@ Rails.application.routes.draw do
 
   post 'accounts/password/reset' => 'users#reset_password'
   get 'accounts/password/token/:id' => 'users#reset_password_token'
-  post 'accounts/password/reset/:id' => 'users#reset_password_update', as: :password_reset
+  post 'accounts/password/reset/:id' => 'users#reset_password_update'
+  # , as: :password_reset
 
   get 'search' => 'api_base#search_note'
   get 'test' => 'api_base#test'
+
+  get 'accounts/password/reset/:id' => 'page#password_reset', as: :password_reset
 
 end

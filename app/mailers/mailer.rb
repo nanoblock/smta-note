@@ -34,7 +34,7 @@ class Mailer < ApplicationMailer
   def reset_password_email(user)
     @user = User.find user.id
     @url = "http://0.0.0.0:3000" + password_reset_path(@user.reset_password_token)
-    mail(:to => user.email,  :subject => "Your password has been reset")
+    mail(:to => user.email,  :subject => "[IDEANOTE] 비밀번호 재설정")
     
   end
 end
