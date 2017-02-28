@@ -1,6 +1,6 @@
 class UsersController < ApiBaseController
   skip_before_action :require_valid_token, :invalid_exsist_token, only: [:create, :activate, 
-    :index, :reset_password_token, :reset_password_update] 
+    :index, :reset_password_token, :reset_password_update, :reset_password] 
 
 
   # GET /users
@@ -94,7 +94,7 @@ class UsersController < ApiBaseController
     user.deliver_reset_password_instructions! if user
 
     # render 'jbuilder/user', status: :ok, formats: 'json'
-    render status: :ok, json: {"reset_token": user.reset_password_token}
+    return render status: :ok, json: {"reset_token": user.reset_password_token}
     # render status: :ok, nothing: true
   end
  
