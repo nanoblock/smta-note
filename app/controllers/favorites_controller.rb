@@ -1,5 +1,5 @@
 class FavoritesController < ApiBaseController
-  before_action :error_user_param, :error_note_param
+  before_action :user_param, :note_param
   before_action :set_favorite, only: [:show, :destroy]
 
   def index
@@ -63,6 +63,16 @@ class FavoritesController < ApiBaseController
 
   def error_render(error)
     error_format(400, "#{error}")
+  end
+
+  def user_param
+    @user = User.find(params[:user_id])
+  end
+
+  def note_param
+    unless @user.notes.exists?(id: params[:note_id])
+      return error_format(400, "Parameter does not match note date")
+    end
   end
 
 end
